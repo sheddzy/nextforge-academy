@@ -1,8 +1,9 @@
 import { useEffect } from 'react';
 import { Routes, Route, Link, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { BookOpen, Award, TrendingUp, Clock, Play, Download, CheckCircle2, BarChart3, CreditCard, Receipt } from 'lucide-react';
+import { BookOpen, Award, TrendingUp, Clock, Play, Download, CheckCircle2, BarChart3, CreditCard, Receipt, Video } from 'lucide-react';
 import { formatNgn } from '../lib/paystack';
+import LiveClassesView from '../components/LiveClassesView';
 import { useAppStore } from '../lib/store';
 import DashboardLayout from '../components/DashboardLayout';
 import CourseCard from '../components/CourseCard';
@@ -322,6 +323,7 @@ export default function StudentDashboard() {
       <Routes>
         <Route index element={<StudentHome />} />
         <Route path="courses" element={<StudentCourses />} />
+        <Route path="live" element={<LiveClassesView />} />
         <Route path="certificates" element={<StudentCertificates />} />
         <Route path="progress" element={<StudentProgress />} />
         <Route path="payments" element={<StudentPayments />} />

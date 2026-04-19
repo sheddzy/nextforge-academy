@@ -3,8 +3,10 @@ import { Routes, Route, Link, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import {
   BookOpen, Users, TrendingUp, MessageSquare, Plus, Edit, Trash2,
-  Send, Clock, CheckCircle2, XCircle, AlertCircle, Eye, Star
+  Send, Clock, CheckCircle2, XCircle, AlertCircle, Eye, Star, Video, Upload
 } from 'lucide-react';
+import LiveClassesView from '../components/LiveClassesView';
+import ContentUpload from '../components/ContentUpload';
 import { useAppStore } from '../lib/store';
 import DashboardLayout from '../components/DashboardLayout';
 import StatCard from '../components/StatCard';
@@ -582,6 +584,8 @@ export default function InstructorDashboard() {
       <Routes>
         <Route index element={<InstructorHome />} />
         <Route path="course" element={<InstructorCourse />} />
+        <Route path="content" element={<ContentUpload />} />
+        <Route path="live" element={<LiveClassesView isInstructor />} />
         <Route path="students" element={<InstructorStudents />} />
         <Route path="reviews" element={<InstructorReviews />} />
         <Route path="announcements" element={<InstructorAnnouncements />} />

@@ -8,22 +8,12 @@ export interface User {
   avatar?: string;
   bio?: string;
   isVerified: boolean;
-  isApproved?: boolean; // for instructors
+  isApproved?: boolean;
   isSuspended?: boolean;
   createdAt: string;
   enrolledCourses?: string[];
   completedCourses?: string[];
   certificates?: Certificate[];
-}
-
-export interface Instructor extends User {
-  role: 'instructor';
-  expertise: string[];
-  rating: number;
-  totalStudents: number;
-  courseCount: number;
-  pendingCourseRequest?: CourseRequest;
-  certifications?: string[];
 }
 
 export interface Course {
@@ -43,6 +33,7 @@ export interface Course {
   isFeatured: boolean;
   isPublished: boolean;
   isApproved: boolean;
+  isComingSoon?: boolean;
   rating: number;
   reviewCount: number;
   enrolledCount: number;
@@ -67,12 +58,16 @@ export interface Lesson {
   id: string;
   moduleId: string;
   title: string;
-  type: 'video' | 'pdf' | 'quiz' | 'assignment';
+  type: 'video' | 'pdf' | 'quiz' | 'assignment' | 'slide';
   duration?: string;
   videoUrl?: string;
+  fileUrl?: string;
+  fileName?: string;
+  fileSize?: string;
   content?: string;
   order: number;
   isPreview: boolean;
+  isDownloadable?: boolean;
   quiz?: Quiz;
 }
 
@@ -101,7 +96,24 @@ export interface Enrollment {
   isCompleted: boolean;
   completedAt?: string;
   paymentRef?: string;
-  amountPaid?: number; // in NGN kobo
+  amountPaid?: number;
+}
+
+export interface LiveClass {
+  id: string;
+  courseId: string;
+  instructorId: string;
+  instructorName: string;
+  title: string;
+  description: string;
+  scheduledAt: string;
+  duration: number; // minutes
+  status: 'scheduled' | 'live' | 'ended';
+  roomName: string;   // Jitsi room name
+  meetingUrl: string; // full Jitsi URL
+  recordingUrl?: string;
+  attendees?: string[];
+  createdAt: string;
 }
 
 export interface PaymentRecord {
@@ -111,10 +123,10 @@ export interface PaymentRecord {
   studentEmail: string;
   courseId: string;
   courseName: string;
-  amountKobo: number;   // NGN kobo
-  amountNgn: number;    // NGN naira
-  amountUsd: number;    // original USD price
-  reference: string;    // Paystack reference
+  amountKobo: number;
+  amountNgn: number;
+  amountUsd: number;
+  reference: string;
   status: 'success' | 'failed' | 'abandoned';
   paidAt: string;
 }
@@ -156,14 +168,8 @@ export interface Review {
   courseId: string;
   studentId: string;
   studentName: string;
-  rating: number;        // 1–5
+  rating: number;
   comment: string;
   createdAt: string;
   updatedAt?: string;
-}
-
-export interface AuthState {
-  user: User | null;
-  isAuthenticated: boolean;
-  token: string | null;
 }

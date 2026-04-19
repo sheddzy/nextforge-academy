@@ -5,7 +5,7 @@ import { useSearchParams } from 'react-router-dom';
 import { useAppStore } from '../lib/store';
 import CourseCard from '../components/CourseCard';
 
-const categories = ['All', 'Web Development', 'Data Science', 'DevOps', 'Design', 'Cybersecurity'];
+const categories = ['All', 'Web Development', 'Data Science', 'DevOps', 'Design', 'Cybersecurity', 'Mobile Development'];
 const levels = ['All', 'Beginner', 'Intermediate', 'Advanced'];
 const sortOptions = ['Most Popular', 'Highest Rated', 'Newest', 'Price: Low to High', 'Price: High to Low'];
 
@@ -17,20 +17,19 @@ export default function CoursesPage() {
   const [level, setLevel] = useState('All');
   const [sort, setSort] = useState('Most Popular');
 
-  // Pre-select category from query param (e.g. ?category=Web+Development)
   useEffect(() => {
     const cat = searchParams.get('category');
     if (cat) {
-      // Match against known categories (partial match for cases like "DevOps & Cloud" → "DevOps")
       const match = categories.find(c => c !== 'All' && (c === cat || cat.startsWith(c) || c.startsWith(cat.split(' ')[0])));
       setCategory(match || 'All');
     }
   }, [searchParams]);
 
-  const publishedCourses = courses.filter(c => c.isApproved && c.isPublished);
+  const allPublished = courses.filter(c => c.isApproved && c.isPublished && !c.isComingSoon);
+  const comingSoon = courses.filter(c => c.isComingSoon);
 
   const filtered = useMemo(() => {
-    let result = publishedCourses;
+    let result = allPublished;
     if (search) result = result.filter(c =>
       c.title.toLowerCase().includes(search.toLowerCase()) ||
       c.description.toLowerCase().includes(search.toLowerCase()) ||
@@ -45,73 +44,84 @@ export default function CoursesPage() {
       case 'Price: High to Low': return [...result].sort((a, b) => b.price - a.price);
       default: return [...result].sort((a, b) => b.enrolledCount - a.enrolledCount);
     }
-  }, [publishedCourses, search, category, level, sort]);
+  }, [allPublished, search, category, level, sort]);
 
   return (
     <div className="min-h-screen" style={{ background: 'var(--bg-primary)' }}>
-      <div className="py-16 border-b" style={{ background: 'var(--bg-secondary)', borderColor: 'var(--border-color)' }}>
+      {/* Header */}
+      <div className="py-14 border-b" style={{ background: 'var(--bg-secondary)', borderColor: 'var(--border-color)' }}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <h1 className="text-4xl font-black mb-3" style={{ color: 'var(--text-primary)' }}>Explore Courses</h1>
-          <p className="mb-8" style={{ color: 'var(--text-muted)' }}>Discover {publishedCourses.length}+ expert-led courses</p>
-          <div className="relative max-w-2xl">
-            <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5" style={{ color: 'var(--text-muted)' }} />
-            <input
-              type="text"
-              placeholder="Search courses, topics, skills..."
-              value={search}
-              onChange={e => setSearch(e.target.value)}
-              className="w-full pl-12 pr-4 py-4 rounded-xl border text-sm outline-none"
-              style={{ background: 'var(--bg-card)', borderColor: 'var(--border-color)', color: 'var(--text-primary)' }}
-            />
+          <h1 className="text-4xl font-black mb-2" style={{ color: 'var(--text-primary)' }}>Explore Courses</h1>
+          <p className="mb-6" style={{ color: 'var(--text-muted)' }}>{allPublished.length} expert-led courses available · {comingSoon.length} coming soon</p>
+          <div className="relative max-w-xl">
+            <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4" style={{ color: 'var(--text-muted)' }} />
+            <input type="text" placeholder="Search courses, topics, skills..." value={search} onChange={e => setSearch(e.target.value)}
+              className="field pl-11" />
           </div>
         </div>
       </div>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="flex flex-col sm:flex-row gap-4 mb-8 flex-wrap">
+        {/* Filters */}
+        <div className="flex flex-col sm:flex-row gap-3 mb-8 flex-wrap">
           <div className="flex gap-2 flex-wrap">
             {categories.map(cat => (
               <button key={cat} onClick={() => setCategory(cat)}
-                className="px-4 py-2 rounded-full text-sm font-medium transition-all border"
+                className="px-3 py-1.5 rounded-full text-xs font-semibold transition-all border"
                 style={category === cat
-                  ? { background: 'var(--accent-primary)', color: 'white', borderColor: 'var(--accent-primary)' }
-                  : { borderColor: 'var(--border-color)', color: 'var(--text-secondary)', background: 'var(--bg-card)' }}>
+                  ? { background: 'var(--accent)', color: 'white', borderColor: 'var(--accent)' }
+                  : { borderColor: 'var(--border-mid)', color: 'var(--text-secondary)', background: 'transparent' }}>
                 {cat}
               </button>
             ))}
           </div>
           <div className="flex gap-2 sm:ml-auto">
-            <select value={level} onChange={e => setLevel(e.target.value)}
-              className="px-4 py-2 rounded-xl border text-sm outline-none"
-              style={{ background: 'var(--bg-card)', borderColor: 'var(--border-color)', color: 'var(--text-primary)' }}>
+            <select value={level} onChange={e => setLevel(e.target.value)} className="field py-1.5 text-xs" style={{ width: 'auto' }}>
               {levels.map(l => <option key={l}>{l}</option>)}
             </select>
-            <select value={sort} onChange={e => setSort(e.target.value)}
-              className="px-4 py-2 rounded-xl border text-sm outline-none"
-              style={{ background: 'var(--bg-card)', borderColor: 'var(--border-color)', color: 'var(--text-primary)' }}>
+            <select value={sort} onChange={e => setSort(e.target.value)} className="field py-1.5 text-xs" style={{ width: 'auto' }}>
               {sortOptions.map(s => <option key={s}>{s}</option>)}
             </select>
           </div>
         </div>
 
-        <p className="text-sm mb-6" style={{ color: 'var(--text-muted)' }}>
-          Showing <strong style={{ color: 'var(--text-primary)' }}>{filtered.length}</strong> courses
-          {search && <> for <strong style={{ color: 'var(--accent-primary)' }}>"{search}"</strong></>}
+        {/* Results */}
+        <p className="text-xs mb-5" style={{ color: 'var(--text-muted)' }}>
+          Showing <strong style={{ color: 'var(--text-primary)' }}>{filtered.length}</strong> course{filtered.length !== 1 ? 's' : ''}
+          {search && <> for <strong style={{ color: 'var(--accent2)' }}>"{search}"</strong></>}
         </p>
 
         {filtered.length === 0 ? (
           <div className="text-center py-20">
-            <BookOpen className="w-12 h-12 mx-auto mb-4" style={{ color: 'var(--text-muted)' }} />
-            <h3 className="text-xl font-semibold mb-2" style={{ color: 'var(--text-primary)' }}>No courses found</h3>
-            <p style={{ color: 'var(--text-muted)' }}>Try adjusting your search or filters</p>
+            <BookOpen className="w-10 h-10 mx-auto mb-3" style={{ color: 'var(--text-muted)' }} />
+            <h3 className="font-semibold mb-1" style={{ color: 'var(--text-primary)' }}>No courses found</h3>
+            <p className="text-sm" style={{ color: 'var(--text-muted)' }}>Try adjusting your search or filters</p>
           </div>
         ) : (
-          <div className="grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5 mb-12">
             {filtered.map((course, i) => (
-              <motion.div key={course.id} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.05 }}>
+              <motion.div key={course.id} initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.04 }}>
                 <CourseCard course={course} />
               </motion.div>
             ))}
+          </div>
+        )}
+
+        {/* Coming soon section */}
+        {comingSoon.length > 0 && (
+          <div>
+            <div className="flex items-center gap-3 mb-5">
+              <div className="flex-1 h-px" style={{ background: 'var(--border-color)' }} />
+              <span className="badge badge-amber px-4 py-1.5 text-xs">🚀 Coming Soon</span>
+              <div className="flex-1 h-px" style={{ background: 'var(--border-color)' }} />
+            </div>
+            <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
+              {comingSoon.map((course, i) => (
+                <motion.div key={course.id} initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.04 }}>
+                  <CourseCard course={course} />
+                </motion.div>
+              ))}
+            </div>
           </div>
         )}
       </div>

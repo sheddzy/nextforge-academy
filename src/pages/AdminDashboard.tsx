@@ -4,9 +4,10 @@ import { motion } from 'framer-motion';
 import {
   Users, BookOpen, BarChart3, TrendingUp, DollarSign, CheckCircle2,
   XCircle, AlertCircle, Eye, Trash2, Star, Shield, ClipboardList,
-  UserCheck, UserX, Award, Activity, CreditCard, ArrowDownRight
+  UserCheck, UserX, Award, Activity, CreditCard, ArrowDownRight, Video
 } from 'lucide-react';
 import { formatNgn } from '../lib/paystack';
+import LiveClassesView from '../components/LiveClassesView';
 import { useAppStore } from '../lib/store';
 import DashboardLayout from '../components/DashboardLayout';
 import StatCard from '../components/StatCard';
@@ -566,6 +567,7 @@ export default function AdminDashboard() {
         <Route index element={<AdminHome />} />
         <Route path="users" element={<AdminUsers />} />
         <Route path="courses" element={<AdminCourses />} />
+        <Route path="live" element={<div className="p-2"><LiveClassesView /></div>} />
         <Route path="requests" element={<AdminRequests />} />
         <Route path="payments" element={<AdminPayments />} />
         <Route path="analytics" element={<AdminAnalytics />} />
