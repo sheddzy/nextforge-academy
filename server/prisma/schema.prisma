@@ -1,0 +1,295 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum UserRole {
+  STUDENT
+  INSTRUCTOR
+  ADMIN
+}
+
+enum CourseLevel {
+  BEGINNER
+  INTERMEDIATE
+  ADVANCED
+}
+
+enum LessonType {
+  VIDEO
+  PDF
+  QUIZ
+  ASSIGNMENT
+}
+
+enum RequestStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+model User {
+  id            String    @id @default(cuid())
+  name          String
+  email         String    @unique
+  passwordHash  String
+  role          UserRole  @default(STUDENT)
+  bio           String?   @db.Text
+  avatarUrl     String?
+  isVerified    Boolean   @default(false)
+  isApproved    Boolean   @default(false)
+  isSuspended   Boolean   @default(false)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  enrollments       Enrollment[]
+  certificates      Certificate[]
+  instructorCourses Course[]        @relation("InstructorCourses")
+  courseRequests    CourseRequest[]
+  announcements     Announcement[]
+  reviews           Review[]
+  payments          Payment[]
+  verificationTokens VerificationToken[]
+  passwordResets    PasswordReset[]
+
+  @@map("users")
+}
+
+model Course {
+  id              String      @id @default(cuid())
+  title           String
+  slug            String      @unique
+  description     String      @db.Text
+  longDescription String      @db.Text
+  thumbnailUrl    String?
+  instructorId    String
+  category        String
+  level           CourseLevel @default(BEGINNER)
+  price           Decimal     @db.Decimal(10, 2) @default(0)
+  isFree          Boolean     @default(false)
+  isFeatured      Boolean     @default(false)
+  isPublished     Boolean     @default(false)
+  isApproved      Boolean     @default(false)
+  rating          Float       @default(0)
+  reviewCount     Int         @default(0)
+  enrolledCount   Int         @default(0)
+  duration        String?
+  tags            String[]
+  requirements    String[]
+  whatYouLearn    String[]
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+
+  instructor    User           @relation("InstructorCourses", fields: [instructorId], references: [id])
+  modules       Module[]
+  enrollments   Enrollment[]
+  certificates  Certificate[]
+  announcements Announcement[]
+  reviews       Review[]
+  payments      Payment[]
+
+  @@map("courses")
+}
+
+model Module {
+  id        String   @id @default(cuid())
+  courseId  String
+  title     String
+  order     Int
+  createdAt DateTime @default(now())
+
+  course  Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  lessons Lesson[]
+
+  @@map("modules")
+}
+
+model Lesson {
+  id        String     @id @default(cuid())
+  moduleId  String
+  title     String
+  type      LessonType
+  duration  String?
+  videoUrl  String?
+  content   String?    @db.Text
+  order     Int
+  isPreview Boolean    @default(false)
+  createdAt DateTime   @default(now())
+
+  module         Module           @relation(fields: [moduleId], references: [id], onDelete: Cascade)
+  quiz           Quiz?
+  lessonProgress LessonProgress[]
+
+  @@map("lessons")
+}
+
+model Quiz {
+  id       String         @id @default(cuid())
+  lessonId String         @unique
+  lesson   Lesson         @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+  questions QuizQuestion[]
+  attempts  QuizAttempt[]
+
+  @@map("quizzes")
+}
+
+model QuizQuestion {
+  id           String   @id @default(cuid())
+  quizId       String
+  question     String
+  options      String[]
+  correctIndex Int
+  order        Int
+  quiz         Quiz     @relation(fields: [quizId], references: [id], onDelete: Cascade)
+
+  @@map("quiz_questions")
+}
+
+model QuizAttempt {
+  id        String   @id @default(cuid())
+  userId    String
+  quizId    String
+  score     Float
+  answers   Json
+  createdAt DateTime @default(now())
+
+  quiz Quiz @relation(fields: [quizId], references: [id])
+
+  @@map("quiz_attempts")
+}
+
+model Enrollment {
+  id                   String    @id @default(cuid())
+  studentId            String
+  courseId             String
+  enrolledAt           DateTime  @default(now())
+  progress             Float     @default(0)
+  lastAccessedLessonId String?
+  isCompleted          Boolean   @default(false)
+  completedAt          DateTime?
+  paymentRef           String?
+  amountPaid           Int?      // kobo
+
+  student        User             @relation(fields: [studentId], references: [id])
+  course         Course           @relation(fields: [courseId], references: [id])
+  lessonProgress LessonProgress[]
+
+  @@unique([studentId, courseId])
+  @@map("enrollments")
+}
+
+model LessonProgress {
+  id           String   @id @default(cuid())
+  enrollmentId String
+  lessonId     String
+  completedAt  DateTime @default(now())
+
+  enrollment Enrollment @relation(fields: [enrollmentId], references: [id], onDelete: Cascade)
+  lesson     Lesson     @relation(fields: [lessonId], references: [id])
+
+  @@unique([enrollmentId, lessonId])
+  @@map("lesson_progress")
+}
+
+model Certificate {
+  id                String   @id @default(cuid())
+  studentId         String
+  courseId          String
+  certificateNumber String   @unique
+  issuedAt          DateTime @default(now())
+
+  student User   @relation(fields: [studentId], references: [id])
+  course  Course @relation(fields: [courseId], references: [id])
+
+  @@unique([studentId, courseId])
+  @@map("certificates")
+}
+
+model Review {
+  id          String   @id @default(cuid())
+  courseId    String
+  studentId   String
+  studentName String
+  rating      Int
+  comment     String   @db.Text
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  course  Course @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  student User   @relation(fields: [studentId], references: [id])
+
+  @@unique([courseId, studentId])
+  @@map("reviews")
+}
+
+model CourseRequest {
+  id                String        @id @default(cuid())
+  instructorId      String
+  courseTitle       String
+  courseDescription String        @db.Text
+  category          String
+  status            RequestStatus @default(PENDING)
+  adminNote         String?
+  submittedAt       DateTime      @default(now())
+  reviewedAt        DateTime?
+
+  instructor User @relation(fields: [instructorId], references: [id])
+
+  @@map("course_requests")
+}
+
+model Announcement {
+  id           String   @id @default(cuid())
+  courseId     String
+  instructorId String
+  title        String
+  content      String   @db.Text
+  createdAt    DateTime @default(now())
+
+  course     Course @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  instructor User   @relation(fields: [instructorId], references: [id])
+
+  @@map("announcements")
+}
+
+model Payment {
+  id          String   @id @default(cuid())
+  studentId   String
+  courseId    String
+  amountKobo  Int
+  amountNgn   Float
+  amountUsd   Float
+  reference   String   @unique
+  status      String   @default("success")
+  paidAt      DateTime @default(now())
+
+  student User   @relation(fields: [studentId], references: [id])
+  course  Course @relation(fields: [courseId], references: [id])
+
+  @@map("payments")
+}
+
+model VerificationToken {
+  id        String   @id @default(cuid())
+  userId    String
+  token     String   @unique
+  expiresAt DateTime
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("verification_tokens")
+}
+
+model PasswordReset {
+  id        String   @id @default(cuid())
+  userId    String
+  token     String   @unique
+  expiresAt DateTime
+  used      Boolean  @default(false)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("password_resets")
+}
