@@ -93,9 +93,12 @@ function InstructorCourse() {
   const [form, setForm] = useState({
     title: myCourse?.title || '',
     description: myCourse?.description || '',
-    category: myCourse?.category || 'Web Development',
+    category: myCourse?.category || 'Project Management',
     level: myCourse?.level || 'Beginner',
   });
+  const [orientationUrl, setOrientationUrl] = useState(myCourse?.orientationVideoUrl || '');
+  const [orientationTitle, setOrientationTitle] = useState(myCourse?.orientationVideoTitle || '');
+  const [orientationSaved, setOrientationSaved] = useState(false);
 
   const handleSave = (e: React.FormEvent) => {
     e.preventDefault();
@@ -103,6 +106,23 @@ function InstructorCourse() {
       updateCourse(myCourse.id, { title: form.title, description: form.description, category: form.category, level: form.level as any });
     }
     setEditing(false);
+  };
+
+  const handleOrientationSave = () => {
+    if (!myCourse || !orientationUrl.trim()) return;
+    updateCourse(myCourse.id, {
+      orientationVideoUrl: orientationUrl.trim(),
+      orientationVideoTitle: orientationTitle.trim() || 'Course Orientation — Watch Before Starting',
+    });
+    setOrientationSaved(true);
+    setTimeout(() => setOrientationSaved(false), 2500);
+  };
+
+  const handleOrientationRemove = () => {
+    if (!myCourse) return;
+    updateCourse(myCourse.id, { orientationVideoUrl: undefined, orientationVideoTitle: undefined });
+    setOrientationUrl('');
+    setOrientationTitle('');
   };
 
   if (!myCourse) return (
@@ -213,6 +233,64 @@ function InstructorCourse() {
                   </div>
                 </div>
               ))}
+            </div>
+          </div>
+
+          {/* ── Orientation Video ─────────────────────────────────────────── */}
+          <div className="rounded-2xl border overflow-hidden" style={{ background: 'var(--bg-card)', borderColor: 'var(--border-color)' }}>
+            <div className="flex items-center justify-between px-5 py-4 border-b" style={{ borderColor: 'var(--border-color)', background: 'var(--bg-secondary)' }}>
+              <div>
+                <h3 className="font-bold" style={{ color: 'var(--text-primary)' }}>🎬 Orientation Video</h3>
+                <p className="text-xs mt-0.5" style={{ color: 'var(--text-muted)' }}>Played automatically for every student before they access course content</p>
+              </div>
+              {myCourse.orientationVideoUrl && (
+                <span className="text-xs px-3 py-1 rounded-full font-semibold bg-green-500/15 text-green-500">✓ Active</span>
+              )}
+            </div>
+            <div className="p-5 space-y-4">
+              {myCourse.orientationVideoUrl && (
+                <div className="flex items-start gap-3 p-3 rounded-xl" style={{ background: 'rgba(34,197,94,0.08)', border: '1px solid rgba(34,197,94,0.2)' }}>
+                  <CheckCircle2 className="w-4 h-4 text-green-500 flex-shrink-0 mt-0.5" />
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-semibold text-green-500">Orientation video is live</p>
+                    <p className="text-xs truncate mt-0.5" style={{ color: 'var(--text-muted)' }}>{myCourse.orientationVideoTitle}</p>
+                    <p className="text-xs truncate" style={{ color: 'var(--text-muted)' }}>{myCourse.orientationVideoUrl}</p>
+                  </div>
+                  <button onClick={handleOrientationRemove} className="text-xs px-2.5 py-1 rounded-lg flex-shrink-0" style={{ background: 'rgba(239,68,68,0.12)', color: '#ef4444' }}>Remove</button>
+                </div>
+              )}
+              <div>
+                <label className="block text-xs font-medium mb-1.5" style={{ color: 'var(--text-secondary)' }}>Video Title</label>
+                <input
+                  value={orientationTitle}
+                  onChange={e => setOrientationTitle(e.target.value)}
+                  placeholder="e.g. Welcome to the Course — Watch Before Starting"
+                  className="w-full px-4 py-2.5 rounded-xl border text-sm outline-none"
+                  style={{ background: 'var(--bg-secondary)', borderColor: 'var(--border-color)', color: 'var(--text-primary)' }}
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-medium mb-1.5" style={{ color: 'var(--text-secondary)' }}>
+                  Video URL <span style={{ color: 'var(--text-muted)' }}>(MP4 link, YouTube embed, Vimeo, Loom, etc.)</span>
+                </label>
+                <div className="flex gap-2">
+                  <input
+                    value={orientationUrl}
+                    onChange={e => setOrientationUrl(e.target.value)}
+                    placeholder="https://your-cdn.com/orientation-video.mp4"
+                    className="flex-1 px-4 py-2.5 rounded-xl border text-sm outline-none"
+                    style={{ background: 'var(--bg-secondary)', borderColor: 'var(--border-color)', color: 'var(--text-primary)' }}
+                  />
+                  <button
+                    onClick={handleOrientationSave}
+                    disabled={!orientationUrl.trim()}
+                    className="px-5 py-2.5 rounded-xl text-sm font-bold text-white disabled:opacity-50 whitespace-nowrap"
+                    style={{ background: 'linear-gradient(135deg, var(--accent-primary), var(--orange-bright))' }}
+                  >
+                    {orientationSaved ? '✓ Saved!' : 'Save Video'}
+                  </button>
+                </div>
+              </div>
             </div>
           </div>
         </div>

@@ -208,6 +208,27 @@ function AdminCourses() {
   const { courses, approveCourse, featureCourse, deleteCourse, updateCourse } = useAppStore();
   const [editingPrice, setEditingPrice] = useState<Record<string, string>>({});
   const [priceSaved, setPriceSaved] = useState<Record<string, boolean>>({});
+  const [orientationExpanded, setOrientationExpanded] = useState<Record<string, boolean>>({});
+  const [orientationUrl, setOrientationUrl] = useState<Record<string, string>>({});
+  const [orientationTitle, setOrientationTitle] = useState<Record<string, string>>({});
+  const [orientationSaved, setOrientationSaved] = useState<Record<string, boolean>>({});
+
+  const handleOrientationSave = (courseId: string) => {
+    const url = orientationUrl[courseId]?.trim();
+    const title = orientationTitle[courseId]?.trim();
+    if (!url) return;
+    updateCourse(courseId, {
+      orientationVideoUrl: url,
+      orientationVideoTitle: title || 'Course Orientation — Watch Before Starting',
+    });
+    setOrientationSaved(prev => ({ ...prev, [courseId]: true }));
+    setTimeout(() => setOrientationSaved(prev => ({ ...prev, [courseId]: false })), 2500);
+  };
+
+  const handleOrientationRemove = (courseId: string) => {
+    updateCourse(courseId, { orientationVideoUrl: undefined, orientationVideoTitle: undefined });
+    setOrientationUrl(prev => { const n = { ...prev }; delete n[courseId]; return n; });
+  };
 
   const handlePriceChange = (courseId: string, value: string) => {
     setEditingPrice(prev => ({ ...prev, [courseId]: value }));
@@ -305,12 +326,69 @@ function AdminCourses() {
                     className="text-xs px-3 py-2 rounded-xl font-medium whitespace-nowrap" style={{ background: 'rgba(245,158,11,0.15)', color: '#f59e0b' }}>
                     {course.isFeatured ? 'Unfeature' : 'Feature'}
                   </button>
+                  <button
+                    onClick={() => setOrientationExpanded(prev => ({ ...prev, [course.id]: !prev[course.id] }))}
+                    className="text-xs px-3 py-2 rounded-xl font-medium whitespace-nowrap"
+                    style={{ background: course.orientationVideoUrl ? 'rgba(99,102,241,0.15)' : 'rgba(99,102,241,0.08)', color: 'var(--accent-primary)', border: `1px solid ${course.orientationVideoUrl ? 'rgba(99,102,241,0.4)' : 'rgba(99,102,241,0.15)'}` }}>
+                    🎬 {course.orientationVideoUrl ? 'Edit Orientation' : 'Add Orientation'}
+                  </button>
                   <button onClick={() => { if (confirm('Delete this course?')) deleteCourse(course.id); }}
                     className="text-xs px-3 py-2 rounded-xl font-medium" style={{ background: 'rgba(239,68,68,0.15)', color: '#ef4444' }}>
                     Remove
                   </button>
                 </div>
               </div>
+
+              {/* Orientation Video Panel */}
+              {orientationExpanded[course.id] && (
+                <div className="border-t px-4 py-4 space-y-3" style={{ borderColor: 'var(--border-color)', background: 'var(--bg-secondary)' }}>
+                  <div className="flex items-center gap-2 mb-1">
+                    <span className="text-sm font-bold" style={{ color: 'var(--text-primary)' }}>🎬 Orientation Video</span>
+                    <span className="text-xs px-2 py-0.5 rounded-full font-semibold" style={{ background: 'rgba(238,122,61,0.15)', color: 'var(--accent-primary)' }}>
+                      Shown to all students before they start
+                    </span>
+                  </div>
+                  {course.orientationVideoUrl && (
+                    <div className="flex items-center gap-3 p-3 rounded-xl" style={{ background: 'rgba(34,197,94,0.08)', border: '1px solid rgba(34,197,94,0.2)' }}>
+                      <CheckCircle2 className="w-4 h-4 text-green-500 flex-shrink-0" />
+                      <div className="flex-1 min-w-0">
+                        <p className="text-xs font-semibold text-green-500">Orientation video set</p>
+                        <p className="text-xs truncate" style={{ color: 'var(--text-muted)' }}>{course.orientationVideoTitle}</p>
+                      </div>
+                      <button onClick={() => handleOrientationRemove(course.id)} className="text-xs px-2 py-1 rounded-lg" style={{ background: 'rgba(239,68,68,0.15)', color: '#ef4444' }}>Remove</button>
+                    </div>
+                  )}
+                  <div>
+                    <label className="block text-xs font-medium mb-1.5" style={{ color: 'var(--text-secondary)' }}>Video Title</label>
+                    <input
+                      value={orientationTitle[course.id] ?? (course.orientationVideoTitle || '')}
+                      onChange={e => setOrientationTitle(prev => ({ ...prev, [course.id]: e.target.value }))}
+                      placeholder="e.g. Welcome to Project Management Mastery — Start Here"
+                      className="w-full px-3 py-2 rounded-xl border text-sm outline-none"
+                      style={{ background: 'var(--bg-card)', borderColor: 'var(--border-color)', color: 'var(--text-primary)' }}
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-medium mb-1.5" style={{ color: 'var(--text-secondary)' }}>Video URL <span style={{ color: 'var(--text-muted)' }}>(MP4, YouTube embed, Vimeo, etc.)</span></label>
+                    <div className="flex gap-2">
+                      <input
+                        value={orientationUrl[course.id] ?? (course.orientationVideoUrl || '')}
+                        onChange={e => setOrientationUrl(prev => ({ ...prev, [course.id]: e.target.value }))}
+                        placeholder="https://your-cdn.com/orientation.mp4"
+                        className="flex-1 px-3 py-2 rounded-xl border text-sm outline-none"
+                        style={{ background: 'var(--bg-card)', borderColor: 'var(--border-color)', color: 'var(--text-primary)' }}
+                      />
+                      <button
+                        onClick={() => handleOrientationSave(course.id)}
+                        className="px-4 py-2 rounded-xl text-sm font-bold text-white whitespace-nowrap"
+                        style={{ background: 'linear-gradient(135deg, var(--accent-primary), var(--orange-bright))' }}
+                      >
+                        {orientationSaved[course.id] ? '✓ Saved!' : 'Save'}
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
           );
         })}

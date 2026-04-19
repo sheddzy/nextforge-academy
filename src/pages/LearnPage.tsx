@@ -4,6 +4,17 @@ import { motion } from 'framer-motion';
 import { Play, FileText, Zap, BookOpen, Check, ChevronLeft, ChevronRight, Award, Download, Menu, X, CheckCircle2, Presentation } from 'lucide-react';
 import { useAppStore } from '../lib/store';
 import type { Lesson } from '../lib/types';
+import OrientationVideo from '../components/OrientationVideo';
+
+// Track which courses the student has already seen the orientation for
+const ORIENTATION_SEEN_KEY = 'nfa_orientation_seen';
+function getSeenOrientations(): string[] {
+  try { return JSON.parse(localStorage.getItem(ORIENTATION_SEEN_KEY) || '[]'); } catch { return []; }
+}
+function markOrientationSeen(courseId: string) {
+  const seen = getSeenOrientations();
+  if (!seen.includes(courseId)) { seen.push(courseId); localStorage.setItem(ORIENTATION_SEEN_KEY, JSON.stringify(seen)); }
+}
 
 export default function LearnPage() {
   const { courseId } = useParams();
@@ -14,6 +25,7 @@ export default function LearnPage() {
   const [quizAnswers, setQuizAnswers] = useState<Record<string, number>>({});
   const [quizSubmitted, setQuizSubmitted] = useState(false);
   const [quizScore, setQuizScore] = useState(0);
+  const [showOrientation, setShowOrientation] = useState(false);
 
   useEffect(() => { if (!isAuthenticated) navigate('/login'); }, [isAuthenticated]);
 
@@ -24,6 +36,10 @@ export default function LearnPage() {
     if (course && !currentLesson) {
       const first = course.modules[0]?.lessons[0];
       if (first) setCurrentLesson(first);
+      // Show orientation if course has one and student hasn't seen it yet
+      if (course.orientationVideoUrl && !getSeenOrientations().includes(course.id)) {
+        setShowOrientation(true);
+      }
     }
   }, [course]);
 
@@ -67,6 +83,15 @@ export default function LearnPage() {
 
   return (
     <div className="flex h-screen overflow-hidden" style={{ background: 'var(--bg-primary)' }}>
+      {/* Orientation Video — shown on first visit */}
+      {showOrientation && course.orientationVideoUrl && (
+        <OrientationVideo
+          videoUrl={course.orientationVideoUrl}
+          title={course.orientationVideoTitle || 'Course Orientation — Watch Before Starting'}
+          courseName={course.title}
+          onDismiss={() => { markOrientationSeen(course.id); setShowOrientation(false); }}
+        />
+      )}
       {/* Sidebar */}
       <div className={`${sidebarOpen ? 'w-72' : 'w-0'} flex-shrink-0 transition-all duration-300 overflow-hidden border-r flex flex-col`}
         style={{ borderColor: 'var(--border-color)', background: 'var(--bg-sidebar)' }}>

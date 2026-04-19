@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { GraduationCap, Eye, EyeOff, ArrowRight, Check, Shield } from 'lucide-react';
+import { Eye, EyeOff, ArrowRight, Check, Shield } from 'lucide-react';
 import { useAppStore } from '../lib/store';
 
 /* ─── Login ─── */
@@ -49,9 +49,7 @@ export function LoginPage() {
         <div className="absolute top-1/3 left-1/4 w-64 h-64 rounded-full" style={{ background: 'radial-gradient(circle, rgba(108,99,255,0.15), transparent 70%)' }} />
         <div className="relative max-w-md">
           <div className="flex items-center gap-3 mb-10">
-            <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ background: 'linear-gradient(135deg, var(--accent), var(--accent2))' }}>
-              <GraduationCap className="w-5 h-5 text-white" />
-            </div>
+            <img src="/logo.png" alt="NextForge Academy" className="h-10 w-auto object-contain" />
             <span className="text-xl font-black" style={{ color: 'var(--text-primary)' }}>NextForge Academy</span>
           </div>
           <h2 className="text-4xl font-black mb-4 leading-tight" style={{ color: 'var(--text-primary)' }}>
@@ -77,9 +75,7 @@ export function LoginPage() {
       <div className="flex-1 flex items-center justify-center p-6 sm:p-10">
         <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} className="w-full max-w-sm">
           <div className="lg:hidden flex items-center gap-2 mb-8">
-            <div className="w-8 h-8 rounded-xl flex items-center justify-center" style={{ background: 'linear-gradient(135deg, var(--accent), var(--accent2))' }}>
-              <GraduationCap className="w-4 h-4 text-white" />
-            </div>
+            <img src="/logo.png" alt="NextForge Academy" className="h-8 w-auto object-contain" />
             <span className="font-bold" style={{ color: 'var(--text-primary)' }}>NextForge Academy</span>
           </div>
 
@@ -179,9 +175,7 @@ export function RegisterPage() {
         <div className="absolute inset-0 hero-grid opacity-60" />
         <div className="relative max-w-md">
           <div className="flex items-center gap-3 mb-10">
-            <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ background: 'linear-gradient(135deg, var(--accent), var(--accent2))' }}>
-              <GraduationCap className="w-5 h-5 text-white" />
-            </div>
+            <img src="/logo.png" alt="NextForge Academy" className="h-10 w-auto object-contain" />
             <span className="text-xl font-black" style={{ color: 'var(--text-primary)' }}>NextForge Academy</span>
           </div>
           <h2 className="text-4xl font-black mb-4 leading-tight" style={{ color: 'var(--text-primary)' }}>

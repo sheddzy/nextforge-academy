@@ -42,6 +42,8 @@ export interface Course {
   tags: string[];
   requirements: string[];
   whatYouLearn: string[];
+  orientationVideoUrl?: string;   // mandatory welcome/orientation video
+  orientationVideoTitle?: string;
   createdAt: string;
   updatedAt: string;
 }

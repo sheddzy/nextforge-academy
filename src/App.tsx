@@ -8,6 +8,7 @@ import { LoginPage, RegisterPage, InstructorApplyPage } from './pages/AuthPages'
 import StudentDashboard from './pages/StudentDashboard';
 import InstructorDashboard from './pages/InstructorDashboard';
 import AdminDashboard from './pages/AdminDashboard';
+import AdminPortal from './pages/AdminPortal';
 import { AboutPage, PricingPage, ContactPage } from './pages/PublicPages';
 
 function App() {
@@ -36,6 +37,8 @@ function App() {
         <Route path="/become-instructor" element={<Layout><InstructorApplyPage /></Layout>} />
         <Route path="/profile" element={<Layout><div className="p-8 text-center">Profile page</div></Layout>} />
         <Route path="/forgot-password" element={<Layout><div className="p-8 text-center">Password reset coming soon</div></Layout>} />
+        {/* Hidden admin portal — not linked anywhere publicly */}
+        <Route path="/admin-portal" element={<AdminPortal />} />
       </Routes>
     </BrowserRouter>
   );
